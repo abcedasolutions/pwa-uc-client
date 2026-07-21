@@ -3,6 +3,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { OnlineBadge } from "./OnlineBadge";
 import { SyncStatusIndicator } from "./SyncStatusIndicator";
 import { InstallButton } from "./InstallButton";
+import { Sidebar, MobileTabBar } from "./Sidebar";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
@@ -34,7 +35,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-4">{children}</main>
+      <div className="flex">
+        <Sidebar />
+        <main className="mx-auto w-full max-w-5xl px-4 py-4 pb-20 sm:pb-4">{children}</main>
+      </div>
+      <MobileTabBar />
     </div>
   );
 }

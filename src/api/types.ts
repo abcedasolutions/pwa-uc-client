@@ -12,6 +12,11 @@ export interface Product {
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  // Catalog attributes (Maestro Productos)
+  weight: number | null;
+  brand: string;
+  type: string;
+  unit: string;
 }
 
 export interface Movement {
@@ -27,4 +32,29 @@ export interface Movement {
   createdBy: string;
   clientMutationId: string;
   createdAt: string;
+}
+
+export interface InventoryCount {
+  _id: string;
+  businessId: string;
+  period: string;
+  description: string;
+  startDate: string;
+  endDate: string | null;
+  status: "open" | "closed";
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InventoryCountItem {
+  _id: string;
+  inventoryCountId: string;
+  productId: string;
+  code: string;
+  productName: string;
+  countedQty: number;
+  countedAt: string;
+  weight: number | null;
+  brand: string;
 }

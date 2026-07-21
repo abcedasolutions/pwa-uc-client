@@ -56,6 +56,12 @@ async function tryRefresh(): Promise<boolean> {
   return refreshPromise;
 }
 
+// MongoDB Atlas free-tier (M0) shared clusters can have real latency spikes
+// on a cold connection — 15s was too tight and produced false-positive
+// timeout errors on an otherwise-working request. 25s gives that room while
+// still guaranteeing the UI is never stuck waiting indefinitely.
+const DEFAULT_TIMEOUT_MS = 25000;
+
 export async function apiFetch(path: string, options: RequestInit = {}, retry = true): Promise<any> {
   const token = getAccessToken();
   const headers: Record<string, string> = {
@@ -64,7 +70,23 @@ export async function apiFetch(path: string, options: RequestInit = {}, retry = 
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  // Without this, a hung request (asleep backend, flaky network) leaves any
+  // caller — most importantly the auth boot check — waiting forever with no
+  // way to recover, which reads to the user as the app being stuck loading.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, { ...options, headers, signal: controller.signal });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new ApiError(0, { error: "La solicitud tardó demasiado. Verifica tu conexión." });
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (res.status === 401 && retry && getRefreshToken()) {
     const refreshed = await tryRefresh();

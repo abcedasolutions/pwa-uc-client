@@ -4,8 +4,9 @@ import type { Product } from "../../api/types";
 import { Modal } from "../common/Modal";
 import { createProductAction, updateProductAction, deleteProductAction } from "../../db/actions";
 import { useToast } from "../common/Toast";
-import { getProductByCode } from "../../db/indexedDb";
+import { getProductByCode, getAllProducts } from "../../db/indexedDb";
 import { useAuth } from "../../hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 
 export function ProductFormModal({
   open,
@@ -27,8 +28,23 @@ export function ProductFormModal({
   const [quantity, setQuantity] = useState("0");
   const [minStock, setMinStock] = useState("0");
   const [notes, setNotes] = useState("");
+  const [weight, setWeight] = useState("");
+  const [brand, setBrand] = useState("");
+  const [type, setType] = useState("");
+  const [unit, setUnit] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ["products", "for-suggestions"],
+    queryFn: getAllProducts,
+    staleTime: Infinity,
+  });
+  const uniqueValues = (values: (string | undefined)[]) =>
+    Array.from(new Set(values.filter((v): v is string => !!v))).sort();
+  const brandOptions = uniqueValues(allProducts.map((p) => p.brand));
+  const typeOptions = uniqueValues(allProducts.map((p) => p.type));
+  const unitOptions = uniqueValues(allProducts.map((p) => p.unit));
 
   useEffect(() => {
     if (!open) return;
@@ -40,6 +56,10 @@ export function ProductFormModal({
       setQuantity(String(existing.quantity));
       setMinStock(String(existing.minStock ?? 0));
       setNotes(existing.notes || "");
+      setWeight(existing.weight === null || existing.weight === undefined ? "" : String(existing.weight));
+      setBrand(existing.brand || "");
+      setType(existing.type || "");
+      setUnit(existing.unit || "");
     } else {
       setCode(prefillCode || "");
       setName("");
@@ -48,6 +68,10 @@ export function ProductFormModal({
       setQuantity("0");
       setMinStock("0");
       setNotes("");
+      setWeight("");
+      setBrand("");
+      setType("");
+      setUnit("");
     }
     setError(null);
   }, [open, existing, prefillCode]);
@@ -76,6 +100,10 @@ export function ProductFormModal({
           quantity: Number(quantity) || 0,
           minStock: Number(minStock) || 0,
           notes: notes.trim(),
+          weight: weight === "" ? null : Number(weight),
+          brand: brand.trim(),
+          type: type.trim(),
+          unit: unit.trim(),
         });
         showToast("Producto guardado.");
       } else {
@@ -86,6 +114,10 @@ export function ProductFormModal({
           price: price === "" ? null : Number(price),
           minStock: Number(minStock) || 0,
           notes: notes.trim(),
+          weight: weight === "" ? null : Number(weight),
+          brand: brand.trim(),
+          type: type.trim(),
+          unit: unit.trim(),
         });
         showToast("Producto actualizado.");
       }
@@ -176,6 +208,63 @@ export function ProductFormModal({
               onChange={(e) => setMinStock(e.target.value)}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
             />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Peso</label>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Unidad</label>
+            <input
+              list="unit-options"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+            />
+            <datalist id="unit-options">
+              {unitOptions.map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Marca</label>
+            <input
+              list="brand-options"
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+            />
+            <datalist id="brand-options">
+              {brandOptions.map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Tipo</label>
+            <input
+              list="type-options"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+            />
+            <datalist id="type-options">
+              {typeOptions.map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
           </div>
         </div>
         <div>

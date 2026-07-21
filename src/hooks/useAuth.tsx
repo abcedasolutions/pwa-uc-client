@@ -22,26 +22,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let settled = false;
+
+    // Kept above apiFetch's own 25s timeout so that one settles first.
+    const safetyTimeout = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        setLoading(false);
+      }
+    }, 30000);
+
     (async () => {
       const token = getAccessToken();
       if (!token) {
-        setLoading(false);
+        if (!settled) {
+          settled = true;
+          setLoading(false);
+        }
         return;
       }
       try {
         const me = await fetchMe();
+        if (settled) return;
         setUser(me);
         await setMeta("businessId", me.business.id);
         await setMeta(CACHED_USER_KEY, me);
       } catch {
-        // Offline or token invalid on boot: fall back to last-known user so the
-        // app shell can still open without connectivity.
+        // Offline or token invalid on boot: fall back to last-known user so the app shell can still open without connectivity.
+        if (settled) return;
         const cached = await getMeta(CACHED_USER_KEY);
-        if (cached) setUser(cached);
+        if (!settled && cached) setUser(cached);
       } finally {
-        setLoading(false);
+        if (!settled) {
+          settled = true;
+          setLoading(false);
+        }
       }
     })();
+
+    return () => clearTimeout(safetyTimeout);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

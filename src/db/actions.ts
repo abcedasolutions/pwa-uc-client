@@ -52,7 +52,9 @@ export async function createProductAction(
 
 export async function updateProductAction(
   id: string,
-  fields: Partial<Pick<Product, "code" | "name" | "category" | "price" | "minStock" | "notes">>
+  fields: Partial<
+    Pick<Product, "code" | "name" | "category" | "price" | "minStock" | "notes" | "weight" | "brand" | "type" | "unit">
+  >
 ): Promise<Product> {
   const existing = await getProduct(id);
   if (!existing) throw new Error("Producto no encontrado localmente.");

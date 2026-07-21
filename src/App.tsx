@@ -7,6 +7,10 @@ import { AppShell } from "./components/layout/AppShell";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterBusinessPage } from "./pages/RegisterBusinessPage";
 import { ProductListPage } from "./pages/ProductListPage";
+import { MaestroProductosPage } from "./pages/MaestroProductosPage";
+import { InventoryManagementPage } from "./pages/InventoryManagementPage";
+import { TomaInventarioPage } from "./pages/TomaInventarioPage";
+import { ReportesPage } from "./pages/ReportesPage";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { startSyncTriggers, stopSyncTriggers } from "./db/syncEngine";
@@ -78,6 +82,46 @@ function AppRoutes() {
           <RequireAuth>
             <AppShell>
               <ProductListPage />
+            </AppShell>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/maestro-productos"
+        element={
+          <RequireAuth>
+            <AppShell>
+              <MaestroProductosPage />
+            </AppShell>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/inventarios"
+        element={
+          <RequireAuth>
+            <AppShell>
+              <InventoryManagementPage />
+            </AppShell>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/toma-inventario"
+        element={
+          <RequireAuth>
+            <AppShell>
+              <TomaInventarioPage />
+            </AppShell>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/reportes"
+        element={
+          <RequireAuth>
+            <AppShell>
+              <ReportesPage />
             </AppShell>
           </RequireAuth>
         }
