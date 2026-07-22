@@ -37,7 +37,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
       <div className="flex">
         <Sidebar />
-        <main className="mx-auto w-full max-w-5xl px-4 py-4 pb-20 sm:pb-4">{children}</main>
+        <main className="mx-auto w-full max-w-8xl px-4 py-4 pb-20 sm:pb-4">{children}</main>
       </div>
       <MobileTabBar />
     </div>
