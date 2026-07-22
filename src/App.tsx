@@ -14,6 +14,7 @@ import { ReportesPage } from "./pages/ReportesPage";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { startSyncTriggers, stopSyncTriggers } from "./db/syncEngine";
+import { DashboardPage } from "./pages/DashboardPage";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +32,7 @@ function RedirectIfAuthed({ children }: { children: ReactNode }) {
   if (loading) {
     return <div className="flex min-h-svh items-center justify-center text-slate-400">Cargando…</div>;
   }
-  if (user) return <Navigate to="/productos" replace />;
+  if (user) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
@@ -74,6 +75,16 @@ function AppRoutes() {
           <RedirectIfAuthed>
             <RegisterBusinessPage />
           </RedirectIfAuthed>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+            <RequireAuth>
+                <AppShell>
+                    <DashboardPage/>
+                </AppShell>
+            </RequireAuth>
         }
       />
       <Route
@@ -126,8 +137,8 @@ function AppRoutes() {
           </RequireAuth>
         }
       />
-      <Route path="/" element={<Navigate to="/productos" replace />} />
-      <Route path="*" element={<Navigate to="/productos" replace />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
